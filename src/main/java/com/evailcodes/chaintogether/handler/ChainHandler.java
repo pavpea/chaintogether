@@ -26,6 +26,8 @@ public class ChainHandler {
     private static final Map<UUID, ServerLevel> DIMENSION_CHANGE_MAP = new HashMap<>();
     // 用于跟踪死亡后未复活的玩家
     private static final Set<UUID> DEAD_PLAYERS = new HashSet<>();
+    // 正在跟随传送的玩家，防止无限循环
+    private static final Set<UUID> FOLLOW_TELEPORTING = new HashSet<>();
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
@@ -154,14 +156,23 @@ public class ChainHandler {
             return;
         }
         if (event.getEntity() instanceof ServerPlayer player && isChained(player)) {
-            // 检查是否有维度变化记录
-            ServerLevel targetLevel = DIMENSION_CHANGE_MAP.get(player.getUUID());
-            
-            if (targetLevel == null) {
-                // 禁止被拴住的玩家使用任何传送方式（包括tp指令、末影珍珠等）
-                // 但允许通过传送门传送（因为会触发PlayerChangedDimensionEvent）
-                // 注意：传送门传送不会触发此事件，而是直接触发PlayerChangedDimensionEvent
-                event.setCanceled(true);
+            // 如果是因为跟随而传送的，直接放行并移除标记
+            if (FOLLOW_TELEPORTING.remove(player.getUUID())) {
+                return;
+            }
+
+            ServerPlayer partner = getPartner(player);
+            if (partner != null && partner.isAlive()) {
+                // 标记伙伴将要跟随传送
+                FOLLOW_TELEPORTING.add(partner.getUUID());
+                
+                // 安排在下一次 tick 传送伙伴，以确保当前玩家的传送已完成
+                player.getServer().execute(() -> {
+                    if (partner.isAlive()) {
+                        // 传送到当前玩家的新位置附近
+                        teleportPlayerToPartner(partner, player, (ServerLevel) player.level());
+                    }
+                });
             }
         }
     }
@@ -229,6 +240,13 @@ public class ChainHandler {
                     
                     ChainTogether.LOGGER.info("Player {} changed dimension to {}", 
                             player.getName().getString(), player.level().dimension().location());
+                            
+                    // 主动将伙伴拉入新维度
+                    player.getServer().execute(() -> {
+                        if (partner.isAlive() && partner.level() != player.level()) {
+                            teleportPlayerToPartner(partner, player, (ServerLevel) player.level());
+                        }
+                    });
                 }
             }
         }
