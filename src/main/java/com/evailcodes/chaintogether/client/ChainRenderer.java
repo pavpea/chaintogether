@@ -11,17 +11,17 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = "chaintogether")
+@EventBusSubscriber(value = Dist.CLIENT, modid = "chaintogether")
 public class ChainRenderer {
     // 客户端绑定状态缓存
     private static final Map<java.util.UUID, java.util.UUID> CLIENT_BOUND_PLAYERS = new HashMap<>();
@@ -36,7 +36,7 @@ public class ChainRenderer {
                 return;
             }
             
-            renderWires(event.getPoseStack(), localPlayer, event.getPartialTick());
+            renderWires(event.getPoseStack().last().pose(), localPlayer, event.getPartialTick().getGameTimeDeltaPartialTick(true));
         }
     }
     

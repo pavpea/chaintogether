@@ -1,47 +1,45 @@
 package com.evailcodes.chaintogether.network;
 
+import com.evailcodes.chaintogether.ChainTogether;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.network.CustomPayloadEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+public record UpdateChainLengthPacket(Vec3 player1Pos, Vec3 player2Pos) implements CustomPacketPayload {
+    public static final Type<UpdateChainLengthPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(ChainTogether.MODID, "update_chain_length"));
 
-public class UpdateChainLengthPacket {
-    private final Vec3 player1Pos;
-    private final Vec3 player2Pos;
+    public static final StreamCodec<RegistryFriendlyByteBuf, UpdateChainLengthPacket> STREAM_CODEC = StreamCodec.of(
+            UpdateChainLengthPacket::encode,
+            UpdateChainLengthPacket::decode
+    );
 
-    public UpdateChainLengthPacket(Vec3 player1Pos, Vec3 player2Pos) {
-        this.player1Pos = player1Pos;
-        this.player2Pos = player2Pos;
-    }
-
-    public static void encode(UpdateChainLengthPacket packet, RegistryFriendlyByteBuf buf) {
-        buf.writeDouble(packet.player1Pos.x);
-        buf.writeDouble(packet.player1Pos.y);
-        buf.writeDouble(packet.player1Pos.z);
-        buf.writeDouble(packet.player2Pos.x);
-        buf.writeDouble(packet.player2Pos.y);
-        buf.writeDouble(packet.player2Pos.z);
+    public static void encode(RegistryFriendlyByteBuf buf, UpdateChainLengthPacket packet) {
+        buf.writeDouble(packet.player1Pos().x);
+        buf.writeDouble(packet.player1Pos().y);
+        buf.writeDouble(packet.player1Pos().z);
+        buf.writeDouble(packet.player2Pos().x);
+        buf.writeDouble(packet.player2Pos().y);
+        buf.writeDouble(packet.player2Pos().z);
     }
 
     public static UpdateChainLengthPacket decode(RegistryFriendlyByteBuf buf) {
-        Vec3 player1Pos = new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble());
-        Vec3 player2Pos = new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble());
-        return new UpdateChainLengthPacket(player1Pos, player2Pos);
+        return new UpdateChainLengthPacket(
+                new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()),
+                new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble())
+        );
     }
 
-    public static void handle(UpdateChainLengthPacket packet, CustomPayloadEvent.Context context) {
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
+    public void handle(IPayloadContext context) {
         context.enqueueWork(() -> {
-            // 客户端处理逻辑将在客户端包处理器中实现
+            // 客户端处理逻辑
         });
-        context.setPacketHandled(true);
-    }
-
-    public Vec3 getPlayer1Pos() {
-        return player1Pos;
-    }
-
-    public Vec3 getPlayer2Pos() {
-        return player2Pos;
     }
 }

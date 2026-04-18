@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.evailcodes.chaintogether.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "chaintogether.refmap.json",
+  "mixins": [],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

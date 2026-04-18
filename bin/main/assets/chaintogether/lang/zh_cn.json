@@ -1,0 +1,5 @@
+{
+  "chaintogether.bound.success": "已成功与 %s 绑定！",
+  "chaintogether.unbound.success": "已成功与 %s 解绑！",
+  "chaintogether.unbound.success.alone": "已成功解绑！"
+}

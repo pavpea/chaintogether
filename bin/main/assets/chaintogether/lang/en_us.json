@@ -1,0 +1,5 @@
+{
+  "chaintogether.bound.success": "Successfully bound to %s!",
+  "chaintogether.unbound.success": "Successfully unbound from %s!",
+  "chaintogether.unbound.success.alone": "Successfully unbound!"
+}
