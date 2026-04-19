@@ -14,17 +14,17 @@ ChainTogether 是一个 Minecraft Forge 模组，允许玩家通过拴绳互相�
 
 ## 游玩指令
 
-/chain bind <player1> <player2> - 绑定两个玩家
+`/chain bind <player1> <player2>` - 绑定两个玩家
 
-/chain unbind <player> - 解除玩家绑定
+`/chain unbind <player>` - 解除玩家绑定
 
-/chain length <multiplier> - 设置粒子线长度倍数
+`/chain length <multiplier>` - 设置粒子线长度倍数
 
-/chain reload - 重新加载配置
+`/chain reload` - 重新加载配置
 
-/chain list - 列出所有被绑定的玩家
+`/chain list` - 列出所有被绑定的玩家
 
-/chain transparency <10~100>  - 设置粒子线透明度
+`/chain transparency <10~100>`  - 设置粒子线透明度
 
 ### 绑定玩家
 
