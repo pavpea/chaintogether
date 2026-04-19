@@ -163,16 +163,22 @@ public class ChainHandler {
 
             ServerPlayer partner = getPartner(player);
             if (partner != null && partner.isAlive()) {
-                // 标记伙伴将要跟随传送
-                FOLLOW_TELEPORTING.add(partner.getUUID());
-                
-                // 安排在下一次 tick 传送伙伴，以确保当前玩家的传送已完成
-                player.getServer().execute(() -> {
-                    if (partner.isAlive()) {
-                        // 传送到当前玩家的新位置附近
-                        teleportPlayerToPartner(partner, player, (ServerLevel) player.level());
-                    }
-                });
+                if (event instanceof net.neoforged.neoforge.event.entity.EntityTeleportEvent.EnderPearl) {
+                    // 当使用末影珍珠时，同时将另一个玩家传送到同样的位置
+                    FOLLOW_TELEPORTING.add(partner.getUUID());
+                    partner.teleportTo((ServerLevel) player.level(), event.getTargetX(), event.getTargetY(), event.getTargetZ(), partner.getYRot(), partner.getXRot());
+                } else {
+                    // 标记伙伴将要跟随传送
+                    FOLLOW_TELEPORTING.add(partner.getUUID());
+                    
+                    // 安排在下一次 tick 传送伙伴，以确保当前玩家的传送已完成
+                    player.getServer().execute(() -> {
+                        if (partner.isAlive()) {
+                            // 传送到当前玩家的新位置附近
+                            teleportPlayerToPartner(partner, player, (ServerLevel) player.level());
+                        }
+                    });
+                }
             }
         }
     }
