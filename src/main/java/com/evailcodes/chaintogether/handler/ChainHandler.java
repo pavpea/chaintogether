@@ -136,6 +136,16 @@ public class ChainHandler {
         return getPartner(player) != null;
     }
 
+    private static void teleportAsChainFollower(ServerPlayer player, Runnable teleportAction) {
+        UUID playerId = player.getUUID();
+        FOLLOW_TELEPORTING.add(playerId);
+        try {
+            teleportAction.run();
+        } finally {
+            FOLLOW_TELEPORTING.remove(playerId);
+        }
+    }
+
     @SubscribeEvent
     public void onLivingAttack(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
         if (event.getEntity().level().isClientSide) {
@@ -163,19 +173,21 @@ public class ChainHandler {
 
             ServerPlayer partner = getPartner(player);
             if (partner != null && partner.isAlive()) {
-                if (event instanceof net.neoforged.neoforge.event.entity.EntityTeleportEvent.EnderPearl) {
+                if (event instanceof net.neoforged.neoforge.event.entity.EntityTeleportEvent.EnderPearl enderPearlEvent) {
                     // 当使用末影珍珠时，同时将另一个玩家传送到同样的位置
-                    FOLLOW_TELEPORTING.add(partner.getUUID());
-                    partner.teleportTo((ServerLevel) player.level(), event.getTargetX(), event.getTargetY(), event.getTargetZ(), partner.getYRot(), partner.getXRot());
+                    ServerLevel targetLevel = enderPearlEvent.getPearlEntity().level() instanceof ServerLevel pearlLevel
+                            ? pearlLevel
+                            : (ServerLevel) player.level();
+                    teleportAsChainFollower(partner, () -> partner.teleportTo(targetLevel,
+                            event.getTargetX(), event.getTargetY(), event.getTargetZ(),
+                            partner.getYRot(), partner.getXRot()));
                 } else {
-                    // 标记伙伴将要跟随传送
-                    FOLLOW_TELEPORTING.add(partner.getUUID());
-                    
                     // 安排在下一次 tick 传送伙伴，以确保当前玩家的传送已完成
                     player.getServer().execute(() -> {
                         if (partner.isAlive()) {
                             // 传送到当前玩家的新位置附近
-                            teleportPlayerToPartner(partner, player, (ServerLevel) player.level());
+                            teleportAsChainFollower(partner,
+                                    () -> teleportPlayerToPartner(partner, player, (ServerLevel) player.level()));
                         }
                     });
                 }
